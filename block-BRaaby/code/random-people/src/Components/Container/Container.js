@@ -1,6 +1,7 @@
 import "../style.css";
 import React from "react";
 import Button from "../Button/Button";
+import TextIcon from "../TextIcon/TextIcon";
 
 class Container extends React.Component {
   constructor(props) {
@@ -19,15 +20,14 @@ class Container extends React.Component {
       loading: false,
     };
 
-    console.log("initial");
+    // console.log("initial");
   }
 
-  componentDidMount() {
-    console.log("Mount");
+  dataFetch = () => {
     fetch("https://randomuser.me/api/")
       .then((resp) => resp.json())
       .then((data) => {
-        console.log(data.results[0]);
+        // // console.log(data.results[0]);
         //
         let userInfo = data.results[0];
         //
@@ -38,23 +38,41 @@ class Container extends React.Component {
           })
           .join(" ");
         details.email = userInfo.email;
-        details.addr = Object.keys(userInfo.location)
-          .map((item) => {
-            return userInfo.location[item];
-          })
-          .join(" ");
+        details.addr =
+          userInfo.location.street.number +
+          " " +
+          userInfo.location.street.name +
+          userInfo.location.city +
+          userInfo.location.country;
         details.picture = userInfo.picture.large;
         details.map = userInfo.nat;
         details.phone = userInfo.phone;
         details.password = userInfo.login.password;
         details.username = userInfo.login.username;
-        this.setState({ details });
+        this.setState({ details, loading: false });
       });
-  }
+  };
 
-  componentDidUpdate() {
-    console.log(this.state);
-  }
+  componentDidMount = () => {
+    // console.log("Mount - Container");
+    this.dataFetch();
+  };
+
+  componentDidUpdate = () => {
+    // console.log("Update - Container");
+    // // console.log(this.state);
+  };
+
+  handleReload = (event) => {
+    this.dataFetch();
+    this.setState((prevState) => {
+      return {
+        loading: !prevState.loading,
+      };
+    });
+  };
+
+  handleHover = () => {};
 
   render() {
     return (
@@ -64,21 +82,18 @@ class Container extends React.Component {
           <div className="half-down"></div>
           <div className="card-container">
             <div className="card-up25">
-              <img src="www.google.com" alt="profile-pic" />
+              <img
+                className="profile-picture"
+                src={`${this.state.details.picture}`}
+                alt="profile-pic"
+              />
             </div>
             <hr />
             <div className="card-down75">
-              <span>My name is</span>
-              <h1>{this.state.details.name}</h1>
-              <div className="icon-container">
-                <img src="/icons/user-solid.svg" alt={`user-name`} />
-                <img src="/icons/envelope-open-solid.svg" alt="age" />
-                <img src="/icons/address-card-regular.svg" alt="address-card" />
-                <img src="/icons/map-solid.svg" alt="solid-map" />
-                <img src="/icons/phone-solid.svg" alt="phone-solid" />
-                <img src="/icons/lock-solid.svg" alt="lock-solid" />
-              </div>
-              <Button class={`loading`} text={`Loading...`} />
+              <TextIcon data={this.state.details} />
+              <button onClick={this.handleReload}>
+                {this.state.loading ? "Loading..." : "Reload"}
+              </button>
             </div>
           </div>
         </div>
